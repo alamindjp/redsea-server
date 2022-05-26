@@ -32,6 +32,12 @@ async function run() {
             const product = await productCollection.findOne(query);
             res.send(product)
         });
+        app.get('/booking/', async (req, res) => {
+            const email = req.query.email
+            const query = {consumerEmail: email}
+            const bookings = await bookingCollection.find(query).toArray();
+            res.send(bookings)
+        });
         app.post('/booking', async (req, res) => {
             const booking = req.body;
             const query = { bookingId:booking.bookingId, bookingName:booking.bookingName, consumerEmail:booking.consumerEmail}
