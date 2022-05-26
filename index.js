@@ -19,6 +19,7 @@ async function run() {
         await client.connect();
         const productCollection = client.db('redsea_ltd').collection('products');
         const bookingCollection = client.db('redsea_ltd').collection('bookings');
+        const userCollection = client.db('redsea_ltd').collection('users');
 
         app.get('/product', async (req, res) => {
             const query = {};
@@ -30,23 +31,35 @@ async function run() {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const product = await productCollection.findOne(query);
-            res.send(product)
+            res.send(product);
         });
+            app.put('/user/:email', async (req, res) => {
+                const email = req.params.email;
+                const user = req.body;
+                const filter = { email: email };
+                const options = { upsert: true, };
+                const updateDoc = {
+                    $set: user,
+                };
+                const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result)
+        });
+
         app.get('/booking/', async (req, res) => {
-            const email = req.query.email
-            const query = {consumerEmail: email}
+            const email = req.query.email;
+            const query = { consumerEmail: email };
             const bookings = await bookingCollection.find(query).toArray();
-            res.send(bookings)
+            res.send(bookings);
         });
         app.post('/booking', async (req, res) => {
             const booking = req.body;
-            const query = { bookingId:booking.bookingId, bookingName:booking.bookingName, consumerEmail:booking.consumerEmail}
-            const exists = await bookingCollection.findOne(query)
+            const query = { bookingId: booking.bookingId, bookingName: booking.bookingName, consumerEmail: booking.consumerEmail };
+            const exists = await bookingCollection.findOne(query);
             if (exists) {
-                return res.send({success: false,booking:exists})
+                return res.send({ success: false, booking: exists });
             }
             const result = await bookingCollection.insertOne(booking);
-           return res.send({success: true, result});
+            return res.send({ success: true, result });
         });
     }
     finally {
