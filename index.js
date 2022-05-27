@@ -48,7 +48,7 @@ async function run() {
             const product = req.body;
             const query = { name: product.name  };
             const exists = await productCollection.findOne(query);
-            if (exists) {
+            if (!exists) {
                 return res.send({ success: false, product: exists });
             }
             const result = await productCollection.insertOne(product);
