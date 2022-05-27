@@ -44,6 +44,16 @@ async function run() {
             const products = await cursor.toArray();
             res.send(products);
         });
+        app.post('/product', async (req, res) => {
+            const product = req.body;
+            const query = { name: product.name  };
+            const exists = await productCollection.findOne(query);
+            if (exists) {
+                return res.send({ success: false, product: exists });
+            }
+            const result = await productCollection.insertOne(product);
+            return res.send({ success: true, result });
+        });
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
