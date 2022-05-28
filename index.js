@@ -40,13 +40,12 @@ async function run() {
 
         app.get('/product', async (req, res) => {
             const query = {};
-            const cursor = productCollection.find(query);
-            const products = await cursor.toArray();
+            const products = await productCollection.find(query).toArray();
             res.send(products);
         });
-        app.post('/product', async (req, res) => {
+        app.post('/product', verifyJWT, async (req, res) => {
             const product = req.body;
-            const query = { name: product.name  };
+            const query = { name: product.name };
             const exists = await productCollection.findOne(query);
             if (exists) {
                 return res.send({ success: false, product: exists });
@@ -54,11 +53,21 @@ async function run() {
             const result = await productCollection.insertOne(product);
             return res.send({ success: true, result });
         });
+        app.delete('/product/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: ObjectId(id) };
+            const result = await productCollection.deleteOne(filter);
+            res.send({ success: true, result });
+        });
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
             const product = await productCollection.findOne(query);
             res.send(product);
+        });
+        app.get('/booking/all', async (req, res) => {
+            const allBooking = await bookingCollection.find().toArray();
+            res.send(allBooking);
         });
 
         app.get('/booking', verifyJWT, async (req, res) => {
@@ -87,6 +96,12 @@ async function run() {
             const users = await userCollection.find().toArray()
             res.send(users);
         });
+        app.get('/user/:email', verifyJWT, async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const user = await userCollection.findOne(query)
+            res.send(user);
+        });
         app.put('/user/:email', async (req, res) => {
             const email = req.params.email;
             const user = req.body;
@@ -99,6 +114,7 @@ async function run() {
             const token = jwt.sign({ email: email }, this.process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' })
             res.send({ result, token })
         });
+
 
         app.put('/user/admin/:email', verifyJWT, async (req, res) => {
             const email = req.params.email;
@@ -118,11 +134,16 @@ async function run() {
         });
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
-            const user = await userCollection.findOne({email: email})
+            const user = await userCollection.findOne({ email: email })
             const isAdmin = user.role === 'admin';
             res.send(isAdmin)
         });
-
+        app.get('/role/user/:email', async (req, res) => {
+            const email = req.params.email;
+            const user = await userCollection.findOne({ email: email })
+            const isUser = user.role === 'user';
+            res.send(isUser)
+        });
 
     }
     finally {
