@@ -167,7 +167,7 @@ async function run() {
 run().catch(console.dir);
 
 app.get('/', (req, res) => {
-    res.send('Welcome to RedSea website!')
+    res.send('Welcome to RedSea website! thanks for visiting')
 });
 
 app.listen(port, () => {
