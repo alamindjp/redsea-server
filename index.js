@@ -37,6 +37,7 @@ async function run() {
         const productCollection = client.db('redsea_ltd').collection('products');
         const bookingCollection = client.db('redsea_ltd').collection('bookings');
         const userCollection = client.db('redsea_ltd').collection('users');
+        const reviewCollection = client.db('redsea_ltd').collection('reviews');
 
         app.get('/product', async (req, res) => {
             const query = {};
@@ -53,7 +54,7 @@ async function run() {
             const result = await productCollection.insertOne(product);
             return res.send({ success: true, result });
         });
-        app.delete('/product/:id', async (req, res) => {
+        app.delete('/product/delete/:id', verifyJWT, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: ObjectId(id) };
             const result = await productCollection.deleteOne(filter);
@@ -61,11 +62,11 @@ async function run() {
         });
         app.get('/product/:id', async (req, res) => {
             const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const product = await productCollection.findOne(query);
+            const filter = { _id: ObjectId(id) };
+            const product = await productCollection.findOne(filter);
             res.send(product);
         });
-        app.get('/booking/all', async (req, res) => {
+        app.get('/booking/all', verifyJWT, async (req, res) => {
             const allBooking = await bookingCollection.find().toArray();
             res.send(allBooking);
         });
@@ -132,6 +133,19 @@ async function run() {
                 res.status(403).send({ message: 'Forbidden' });
             }
         });
+        app.get('/review', async (req, res) => {
+            const review = await reviewCollection.find().toArray();
+            res.send(review);
+        });
+        app.post('/review', async (req, res) => {
+            const review = req.body;
+            const result = await reviewCollection.insertOne(review);
+            return res.send(result);
+        });
+
+
+
+
         app.get('/admin/:email', async (req, res) => {
             const email = req.params.email;
             const user = await userCollection.findOne({ email: email })
